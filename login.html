@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>Login / Register</title>
+</head>
+<body class="container py-5">
+
+<h2 id="formTitle">Login or Register</h2>
+
+<div id="authForm" class="mt-4">
+  <input id="email" type="email" class="form-control mb-2" placeholder="Email">
+  <input id="password" type="password" class="form-control mb-2" placeholder="Password">
+  
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary w-50" onclick="login()">Login</button>
+    <button class="btn btn-success w-50" onclick="register()">Register</button>
+  </div>
+</div>
+
+<script>
+function login() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  if(!email || !password) { alert("Fill both fields"); return; }
+
+  google.script.run.withSuccessHandler(res => {
+    if(res.success){
+      alert("Welcome "+res.name);
+      // Redirect to another page (optional)
+      // window.location.href = "trials.html?email=" + encodeURIComponent(email);
+    } else {
+      alert(res.error);
+    }
+  }).loginUser(email, password);
+}
+
+function register() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  if(!email || !password) { alert("Fill both fields"); return; }
+
+  google.script.run.withSuccessHandler(res => {
+    if(res.success){
+      alert("Registered successfully! You can now log in.");
+    } else {
+      alert(res.error);
+    }
+  }).registerUser(email, password);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+<div class="container py-3">
+<h4>Admin Dashboard</h4>
+
+<a class="btn btn-success w-100 mb-2" href="YOUR_WEBAPP_URL?view=admin">
+View Reports
+</a>
+
+<button class="btn btn-warning w-100" onclick="autoAssign()">Auto Assign Trials</button>
+
+<script>
+function autoAssign(){
+ fetch("YOUR_WEBAPP_URL?assign=1").then(()=>alert("Assigned"));
+}
+</script>
+</div>
