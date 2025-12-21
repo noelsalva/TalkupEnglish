@@ -7,6 +7,7 @@
 
 <!-- Bootstrap -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>
 body { padding-top: 70px; font-family: Arial, sans-serif; }
@@ -21,6 +22,119 @@ body { padding-top: 70px; font-family: Arial, sans-serif; }
 .teacher-desc { font-size:0.75rem; display:none; white-space:pre-wrap; }
 .teacher-name { font-size:0.9rem;font-weight:bold;margin-top:5px; }
 .btn-book { font-size:1.2rem;padding:10px 30px;font-weight:bold;border-radius:50px;color:#fff;border:none;background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);}
+/* ================= MOBILE FRIENDLY ADDITIONS ================= */
+@media (max-width: 768px) {
+
+  body {
+    padding-top: 60px;
+  }
+
+  /* Navbar */
+  .navbar .container {
+    flex-wrap: wrap;
+  }
+
+  .navbar-nav {
+    width: 100%;
+    justify-content: space-around;
+    margin-top: 8px;
+  }
+
+  .navbar-nav .nav-link {
+    font-size: 0.85rem;
+    padding: 6px 4px;
+  }
+
+  /* Home layout */
+  .home-bg {
+    padding: 15px !important;
+    text-align: center;
+  }
+
+  .home-bg .row {
+    flex-direction: column;
+  }
+
+  .logo {
+    width: 90px;
+  }
+
+  .btn-book {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  /* WeChat image */
+  .home-bg img[width="150"] {
+    width: 120px;
+  }
+
+  /* Teacher sidebar → stacked */
+  .home-bg .col-md-3 {
+    margin-top: 20px;
+    border-radius: 15px;
+  }
+
+  /* Teacher cards */
+  .teacher-box {
+    min-height: 140px;
+    padding: 8px;
+  }
+
+  .teacher-name {
+    font-size: 0.8rem;
+  }
+
+  .teacher-desc {
+    font-size: 0.7rem;
+  }
+
+  /* Forms */
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 0.9rem;
+  }
+
+  /* Tables (attendance / admin) */
+  table {
+    font-size: 0.75rem;
+  }
+
+  table th,
+  table td {
+    padding: 6px;
+  }
+
+  /* Notification Center */
+  #notificationCenter {
+    width: 95%;
+    right: 2.5%;
+    top: 65px;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+
+  h2, h3 {
+    font-size: 1.2rem;
+  }
+
+  h4, h5 {
+    font-size: 1rem;
+  }
+
+  .navbar-brand {
+    font-size: 0.95rem;
+  }
+
+  .dropdown-menu {
+    width: 100% !important;
+  }
+}
+
 </style>
 </head>
 <!-- ================== NOTIFICATION CENTER ================== -->
@@ -30,145 +144,61 @@ body { padding-top: 70px; font-family: Arial, sans-serif; }
   <button class="btn btn-sm btn-secondary mt-2 w-100" onclick="clearNotifications()">Clear All</button>
 </div>
 
-<script>
-// ================== NOTIFICATION CENTER LOGIC ==================
-let notificationLog = loadData("notificationLog") || [];
 
-// Show/Hide notification center (can add toggle button)
-function toggleNotificationCenter() {
-  const center = document.getElementById("notificationCenter");
-  center.classList.toggle("hidden");
-}
-
-// Add a notification to the center
-function addNotificationCenter(message, page = "", type = "info") {
-  const notif = { message, page, type, time: new Date().toISOString(), read: false };
-  notificationLog.push(notif);
-  saveData("notificationLog", notificationLog);
-  renderNotifications();
-}
-
-// Render notifications feed
-function renderNotifications() {
-  const list = document.getElementById("notificationList");
-  list.innerHTML = "";
-
-  notificationLog.slice().reverse().forEach((notif, idx) => {
-    const li = document.createElement("li");
-    li.className = `list-group-item list-group-item-${notif.type} d-flex justify-content-between align-items-start`;
-    li.style.cursor = notif.page ? "pointer" : "default";
-    li.innerHTML = `
-      <div>
-        <div class="fw-bold">${notif.read ? "" : "🔵 "} ${notif.message}</div>
-        <small class="text-muted">${new Date(notif.time).toLocaleString()}</small>
-      </div>
-      <span class="badge bg-primary rounded-pill">${notif.read ? "✓" : "New"}</span>
-    `;
-    li.addEventListener("click", () => {
-      if(notif.page) showPage(notif.page);
-      notif.read = true;
-      saveData("notificationLog", notificationLog);
-      renderNotifications();
-    });
-    list.appendChild(li);
-  });
-}
-
-// Clear all notifications
-function clearNotifications() {
-  notificationLog = [];
-  saveData("notificationLog", notificationLog);
-  renderNotifications();
-}
-
-// ================== EVENT INTEGRATION ==================
-// Trial booking event
-document.getElementById("trialForm").addEventListener("submit", e => {
-  e.preventDefault();
-  const parent = parentName.value;
-  const student = studentName.value;
-  const assigned = autoAssignTeacher(["Teacher Ann", "Teacher John", "Teacher Lisa", "Teacher Mark"]);
-
-  const trial = { parent, student, assignedTeacher: assigned, status: "Assigned" };
-  trialLog.push(trial);
-  saveData("trialLog", trialLog);
-
-  trialMessage.innerHTML = `Trial booked ✔ Assigned to <b>${assigned}</b>`;
-
-  // Add notification
-  addNotificationCenter(`Trial booked: ${student} → ${assigned} (Parent: ${parent})`, "trial", "success");
-  e.target.reset();
-});
-
-// Attendance event
-document.getElementById("attendanceForm").addEventListener("submit", e => {
-  e.preventDefault();
-  const record = {
-    teacher: attTeacher.value,
-    student: attStudent.value,
-    date: attDate.value,
-    status: attStatus.value,
-    time: attTime.value,
-    notes: attNotes.value
-  };
-  attendanceLog.push(record);
-  saveData("attendanceLog", attendanceLog);
-
-  updateAttendanceScore(record.teacher);
-  attendanceMsg.innerText = "Attendance saved ✔";
-
-  // Add notification
-  addNotificationCenter(`Attendance recorded: ${record.student} (${record.status}) - Teacher: ${record.teacher}`, "attendanceSheet", "info");
-  e.target.reset();
-});
-
-// Payment event
-function addPayment(student, amount, status="Completed") {
-  const payment = { student, amount, status, date: new Date().toLocaleDateString() };
-  paymentLog.push(payment);
-  saveData("paymentLog", paymentLog);
-
-  // Add notification
-  addNotificationCenter(`Payment ${status}: ${student} paid $${amount}`, "dashboard", "warning");
-}
-
-// Load existing notifications on dashboard load
-document.addEventListener("DOMContentLoaded", () => {
-  renderNotifications();
-});
-
-</script>
 
 <body>
 
 <!-- NAVBAR -->
 <nav class="navbar navbar-dark bg-primary fixed-top">
 <div class="container">
-<a class="navbar-brand" href="javascript:void(0)" onclick="showPage('home')">TalkUp English</a>
+<a class="navbar-brand" href="javascript:void(0)" onclick="showPage('home')">ESL Learning.. </a>
 
-<ul class="navbar-nav flex-row gap-3">
+<ul class="navbar-nav flex-row flex-wrap gap-2">
 <li class="nav-item"><span class="nav-link text-white" onclick="showPage('home')">Home</span></li>
 <li class="nav-item"><span class="nav-link text-white" onclick="showPage('trial')">Trial Class Booking</span></li>
 <li class="nav-item"><span class="nav-link text-white" onclick="showPage('teachers')">Teachers</span></li>
 <li class="nav-item"><span class="nav-link text-white" onclick="showPage('dashboard')">Dashboard</span></li>
 </ul>
-
+  
 <div class="dropdown ms-3">
 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">☰</button>
+
 <ul class="dropdown-menu dropdown-menu-end p-2" style="width:320px">
-<li class="dropdown-item small" onclick="showPage('attendanceSheet')">📋 Attendance Sheet</li>
-<li class="dropdown-item small admin-only" onclick="showPage('trialAssign')">🎯 Trial Class Assignment (Admin)</li>
-<li class="dropdown-item small" onclick="showPage('attendanceTracking')">📊 Attendance Tracking</li>
-<li class="dropdown-item small admin-only" onclick="showPage('absenceOverview')">⚠️ Teacher Absence Overview</li>
-<li class="dropdown-item small" onclick="showPage('parentDashboard')">👨‍👩‍👧 Parent Dashboard</li>
-<li class="dropdown-item small" onclick="showPage('teacherDashboard')">👩‍🏫 Teacher Dashboard</li>
+
+  <!-- ADMIN -->
+  <li class="dropdown-item small admin-only"
+      onclick="showPage('trialAssign')">
+    🎯 Trial Class Assignment
+  </li>
+
+  <li class="dropdown-item small"
+      onclick="showPage('attendanceTracking')">
+    📊 Attendance Tracking
+  </li>
+
+  <li class="dropdown-item small admin-only"
+      onclick="showPage('absenceOverview')">
+    ⚠️ Teacher Absence Overview
+  </li>
+
+  <!-- DASHBOARDS -->
+  <li class="dropdown-item small"
+      onclick="showPage('parentDashboardSection')">
+    👨‍👩‍👧 Parent Dashboard
+  </li>
+
+  <li class="dropdown-item small"
+      onclick="showPage('teacherDashboardSection')">
+    👩‍🏫 Teacher Dashboard
+  </li>
+
 </ul>
+
 </div>
 </div>
 </nav>
 
-<button class="btn btn-outline-primary admin-only" onclick="exportAttendanceCSV()">Export Attendance</button>
-
+  
 <div class="container-fluid">
 <!-- HOME -->
 <div id="home" class="home-bg p-4">
@@ -183,11 +213,64 @@ document.addEventListener("DOMContentLoaded", () => {
     <div class="col-md-3 p-4" style="background:rgba(0,0,0,0.25)">
       <h4 class="mb-4">👩‍🏫 Our Teachers</h4>
       <div class="row g-3 text-center">
-        <div class="col-6"><div class="teacher-box" onclick="toggleProfile(this)"><img src="profile.jpeg"><div class="teacher-desc">👩‍🏫 Teacher Ann ...</div></div><div class="teacher-name">Teacher Ann</div></div>
-        <div class="col-6"><div class="teacher-box" onclick="toggleProfile(this)"><img src="teacher-john.png"><div class="teacher-desc">👨‍🏫 Teacher John ...</div></div><div class="teacher-name">Teacher John</div></div>
-        <div class="col-6"><div class="teacher-box" onclick="toggleProfile(this)"><img src="teacher-lisa.png"><div class="teacher-desc">👩‍🏫 Teacher Lisa ...</div></div><div class="teacher-name">Teacher Lisa</div></div>
-        <div class="col-6"><div class="teacher-box" onclick="toggleProfile(this)"><img src="teacher-mark.png"><div class="teacher-desc">👨‍🏫 Teacher Mark ...</div></div><div class="teacher-name">Teacher Mark</div></div>
+
+        <div class="col-6">
+          <div class="teacher-box" onclick="toggleProfile(this)">
+            <img src="profile.jpeg">
+            <div class="teacher-desc">
+👩‍🏫 Teacher Ann
+
+I’m a TEFL-certified English teacher with 5 years of teaching experience across Asia and Europe. I teach both kids and adults, including IELTS preparation, and I focus on making lessons friendly, patient, and fun. I’ve also taught through platforms like HelloTalk, PalFish (Banyu), and my private tutoring services and I enjoy creating engaging lessons that help students improve their speaking, listening, and confidence in English.
+            </div>
+          </div>
+          <div class="teacher-name">Teacher Ann</div>
+        </div>
+
+        <div class="col-6">
+          <div class="teacher-box" onclick="toggleProfile(this)">
+            <img src="teacher-john.png">
+            <div class="teacher-desc">
+👨‍🏫 Teacher John
+
+IELTS specialist
+7 years teaching experience
+Speaking & pronunciation focus
+            </div>
+          </div>
+          <div class="teacher-name">Teacher John</div>
+        </div>
+
+        <div class="col-6">
+          <div class="teacher-box" onclick="toggleProfile(this)">
+            <img src="teacher-lisa.png">
+            <div class="teacher-desc">
+👩‍🏫 Teacher Lisa
+
+Kids English expert
+Phonics & storytelling
+            </div>
+          </div>
+          <div class="teacher-name">Teacher Lisa</div>
+        </div>
+
+        <div class="col-6">
+          <div class="teacher-box" onclick="toggleProfile(this)">
+            <img src="teacher-mark.png">
+            <div class="teacher-desc">
+👨‍🏫 Teacher Mark
+
+Business English coach
+Professional communication
+            </div>
+          </div>
+          <div class="teacher-name">Teacher Mark</div>
+        </div>
+
       </div>
+    </div>
+
+  </div>
+</div>
     </div>
   </div>
 </div>
@@ -231,57 +314,6 @@ document.addEventListener("DOMContentLoaded", () => {
   <div id="dashboardContent" class="mt-3"></div>
 </div>
 
-<!-- ATTENDANCE SHEET -->
-<div id="attendanceSheet" class="hidden p-4 container">
-  <h3>📋 Attendance Sheet</h3>
-  <form id="attendanceForm">
-    <input class="form-control mb-2" id="attTeacher" placeholder="Teacher Name" required>
-    <input class="form-control mb-2" id="attStudent" placeholder="Student Name" required>
-    <input class="form-control mb-2" type="date" id="attDate" required>
-    <select class="form-select mb-2" id="attStatus">
-      <option value="conducted">Conducted</option>
-      <option value="teacherAbsent">Teacher Absent</option>
-      <option value="studentAbsent">Student Absent</option>
-      <option value="late">Late / No Show</option>
-      <option value="makeup">Make-up Class</option>
-    </select>
-    <input class="form-control mb-2" type="time" id="attTime">
-    <textarea class="form-control mb-2" id="attNotes" placeholder="Notes"></textarea>
-    <button class="btn btn-success">Save Attendance</button>
-  </form>
-  <div id="attendanceMsg" class="mt-3"></div>
-</div>
-
-<!-- TRIAL ASSIGN -->
-<div id="trialAssign" class="hidden p-4 container admin-only">
-  <h3>🎯 Trial Class Assignment</h3>
-  <input class="form-control mb-2" placeholder="Student Name">
-  <input class="form-control mb-2" placeholder="Assigned Teacher">
-  <button class="btn btn-primary">Assign Teacher</button>
-</div>
-
-<!-- ATTENDANCE TRACKING -->
-<div id="attendanceTracking" class="hidden p-4 container">
-  <h3>📊 Attendance Tracking</h3>
-  <ul>
-    <li>Conducted</li>
-    <li>Teacher Absent</li>
-    <li>Student Absent</li>
-    <li>Late / No Show</li>
-    <li>Make-up Classes</li>
-  </ul>
-</div>
-
-<!-- ABSENCE OVERVIEW -->
-<div id="absenceOverview" class="hidden p-4 container admin-only">
-  <h3>⚠️ Teacher Absence Overview</h3>
-  <table class="table table-bordered">
-    <thead>
-      <tr><th>Teacher</th><th>Teacher Absent</th><th>Late / No-show</th><th>Risk Level</th></tr>
-    </thead>
-    <tbody id="absenceTable"></tbody>
-  </table>
-</div>
 
 <!-- TEACHER DASHBOARD -->
 <div id="teacherDashboard" class="hidden p-4 container">
@@ -309,550 +341,103 @@ document.addEventListener("DOMContentLoaded", () => {
   <div id="teacherFeedback" class="mb-3"></div>
 </div>
 
+<!-- TRIAL ASSIGN -->
+<div id="trialAssign" class="hidden p-4 container admin-only">
+  <h3>🎯 Trial Class Assignment</h3>
+  <input class="form-control mb-2" placeholder="Student Name">
+  <input class="form-control mb-2" placeholder="Assigned Teacher">
+  <button class="btn btn-primary">Assign Teacher</button>
+</div>
+
+<!-- ATTENDANCE TRACKING -->
+<div id="attendanceTracking" class="hidden p-4 container">
+  <h3>📊 Attendance Tracking</h3>
+  <ul>
+    <li>Conducted</li>
+    <li>Teacher Absent</li>
+    <li>Student Absent</li>
+    <li>Late / No Show</li>
+    <li>Make-up Classes</li>
+  </ul>
+</div>
+
+<!-- ABSENCE OVERVIEW -->
+<div id="absenceOverview" class="hidden p-4 container admin-only">
+  <h3>⚠️ Teacher Absence Overview</h3>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Teacher</th>
+        <th>Absent</th>
+        <th>Late</th>
+        <th>Risk</th>
+      </tr>
+    </thead>
+    <tbody id="absenceTable"></tbody>
+  </table>
+</div>
+
+<!-- ================= MAIN APP SCRIPT ================= -->
 <script>
-// ================== DASHBOARD RENDERING ==================
-function renderParentDashboard(parentName) {
-  const trials = trialLog.filter(t => t.parent === parentName);
-  const payments = paymentLog.filter(p => trials.some(trial => trial.student === p.student));
-  const feedbacks = feedbackLog.filter(f => trials.some(trial => trial.student === f.student));
-
-  // Trials
-  let trialHTML = "<h5>Trial Classes</h5><ul>";
-  trials.forEach(t => {
-    trialHTML += `<li>${t.student} – Assigned Teacher: ${t.assignedTeacher} – Status: ${t.status}</li>`;
-  });
-  trialHTML += "</ul>";
-  parentTrials.innerHTML = trialHTML;
-
-  // Payments
-  let paymentHTML = "<h5>Payment Status</h5><ul>";
-  payments.forEach(p => {
-    paymentHTML += `<li>${p.student} – $${p.amount} – ${p.status} (${p.date})</li>`;
-  });
-  paymentHTML += "</ul>";
-  parentPayments.innerHTML = paymentHTML;
-
-  // Feedback
-  let feedbackHTML = "<h5>Feedback Summary</h5><ul>";
-  feedbacks.forEach(f => {
-    feedbackHTML += `<li>${f.student} – ${f.teacher}: "${f.feedbackText}" (Score: ${f.sentimentScore})</li>`;
-  });
-  feedbackHTML += "</ul>";
-  parentFeedback.innerHTML = feedbackHTML;
-
-  // Show section
-  parentDashboardSection.classList.remove("hidden");
-  teacherDashboardSection.classList.add("hidden");
+  function toggleProfile(box) {
+  const desc = box.querySelector('.teacher-desc');
+  if(desc) desc.style.display = desc.style.display === 'none' ? 'block' : 'none';
 }
 
-// ================== TEACHER DASHBOARD ==================
-function renderTeacherDashboard(teacherName) {
-  // Attendance
-  const score = 100 - getTeacherScore(teacherName);
-  teacherAttendanceScore.innerText = score;
-
-  // Payroll
-  const payroll = calculateTeacherPayroll(teacherName);
-  teacherPayroll.innerText = payroll;
-
-  // Trial Classes assigned
-  const trials = trialLog.filter(t => t.assignedTeacher === teacherName);
-  let trialsHTML = "<h5>Trial Classes Assigned</h5><ul>";
-  trials.forEach(t => {
-    trialsHTML += `<li>${t.student} – Parent: ${t.parent} – Status: ${t.status}</li>`;
-  });
-  trialsHTML += "</ul>";
-  teacherTrials.innerHTML = trialsHTML;
-
-  // Feedback
-  const feedbacks = feedbackLog.filter(f => f.teacher === teacherName);
-  const summary = getFeedbackSummary(teacherName);
-  let feedbackHTML = `<h5>Feedback Summary</h5>
-    <p>Positive: ${summary.positive} | Neutral: ${summary.neutral} | Negative: ${summary.negative}</p>
-    <ul>`;
-  feedbacks.forEach(f => {
-    feedbackHTML += `<li>${f.student}: "${f.feedbackText}" (Score: ${f.sentimentScore})</li>`;
-  });
-  feedbackHTML += "</ul>";
-  teacherFeedback.innerHTML = feedbackHTML;
-
-  // Show section
-  teacherDashboardSection.classList.remove("hidden");
-  parentDashboardSection.classList.add("hidden");
+/* ========= HELPERS (FIRST) ========= */
+function saveData(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
 }
 
-// ================== DASHBOARD LOADER ==================
-function loadDashboard() {
-  const role = roleSelect.value;
-  const name = nameInput.value.trim();
-  if(!role || !name) return alert("Select role and enter name");
+function loadData(key) {
+  return JSON.parse(localStorage.getItem(key)) || [];
+}
+/* ========= PAGE SWITCHING ========= */
+function showPage(pageId) {
+  // Hide all pages
+  const pages = document.querySelectorAll('.container, .home-bg');
+  pages.forEach(p => p.classList.add('hidden'));
 
-  applyRole(role);
-  dashboardContent.innerHTML = `<p>Welcome ${name} (${role})</p>`;
-
-  if(role === "parent") renderParentDashboard(name);
-  if(role === "teacher") renderTeacherDashboard(name);
-  if(role === "admin") {
-    loadAbsenceOverview();
-    parentDashboardSection.classList.add("hidden");
-    teacherDashboardSection.classList.add("hidden");
-  }
+  // Show the selected page
+  const page = document.getElementById(pageId);
+  if (page) page.classList.remove('hidden');
 }
 
-// ================== EXAMPLES ==================
-// Uncomment to test
-// bookTrial("Parent A", "Student X", ["Teacher Lisa"]);
-// addPayment("Student X", 50, "2025-12-20");
-// addFeedback("Student X", "Teacher Lisa", "Great teacher, very patient!");
-</script>
-
-<!-- JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-// ---------- GLOBAL ----------
-let attendanceLog = [];
-let trialLog = [];
-let currentRole = "";
-
-// ---------- SHOW PAGE ----------
-function showPage(page){
-  document.querySelectorAll('#home,#trial,#teachers,#dashboard,#attendanceSheet,#trialAssign,#attendanceTracking,#absenceOverview,#teacherDashboard')
-  .forEach(p=>p.classList.add('hidden'));
-  document.getElementById(page).classList.remove('hidden');
-}
-
-// ---------- DASHBOARD ----------
-function loadDashboard(){
-  const role = roleSelect.value;
-  const name = nameInput.value.trim();
-  if(!role||!name)return alert("Select role and enter name");
-  currentRole = role;
-  dashboardContent.innerHTML = `<p>Welcome ${name} (${role})</p>`;
-  document.querySelectorAll(".admin-only").forEach(el=>el.style.display=role==="admin"?"block":"none");
-}
-
-// ---------- TEACHER PROFILE ----------
-function toggleProfile(card){
-  const img=card.querySelector("img");
-  const desc=card.querySelector(".teacher-desc");
-  img.style.display=img.style.display==="none"?"block":"none";
-  desc.style.display=desc.style.display==="block"?"none":"block";
-}
-
-// ---------- ATTENDANCE ----------
-document.getElementById("attendanceForm").addEventListener("submit",e=>{
-  e.preventDefault();
-  const record={teacher:attTeacher.value,student:attStudent.value,date:attDate.value,status:attStatus.value,time:attTime.value,notes:attNotes.value};
-  attendanceLog.push(record);
-  saveData("attendanceLog",attendanceLog);
-  updateAttendanceScore();
-  attendanceMsg.innerText="Attendance saved ✔";
-  e.target.reset();
-  loadAbsenceOverview();
-});
-
-function updateAttendanceScore(){
-  let score=100;
-  attendanceLog.forEach(s=>{
-    if(s.status==="teacherAbsent")score-=20;
-    if(s.status==="late")score-=10;
-    if(s.status==="studentAbsent")score-=5;
-  });
-  score=Math.max(score,0);
-  document.getElementById("attendanceScore").innerText=score+"%";
-}
-
-// ---------- TRIAL FORM ----------
-document.getElementById("trialForm").addEventListener("submit",e=>{
-  e.preventDefault();
-  const teachers=["Teacher Ann","Teacher John","Teacher Lisa","Teacher Mark"];
-  const assigned=autoAssignTeacher(teachers);
-  const trial={parent:parentName.value,student:studentName.value,assignedTeacher:assigned,status:"Assigned"};
-  trialLog.push(trial);
-  saveData("trialLog",trialLog);
-  trialMessage.innerHTML=`Trial booked ✔ Assigned to <b>${assigned}</b>`;
-  e.target.reset();
-});
-
-// ---------- AUTO ASSIGN ----------
-function getTeacherScore(teacher){
-  const records=attendanceLog.filter(r=>r.teacher===teacher);
-  let penalty=0;
-  records.forEach(r=>{if(r.status==="teacherAbsent")penalty+=20;if(r.status==="late")penalty+=10;});
-  return penalty;
-}
-function autoAssignTeacher(teachers){
-  return teachers.map(t=>({name:t,score:getTeacherScore(t)})).sort((a,b)=>a.score-b.score)[0].name;
-}
-
-// ---------- EXPORT CSV ----------
-function exportAttendanceCSV(){
-  let csv="Teacher,Student,Date,Status,Time,Notes\n";
-  attendanceLog.forEach(r=>{csv+=`${r.teacher},${r.student},${r.date},${r.status},${r.time},${r.notes}\n`;});
-  const blob=new Blob([csv],{type:"text/csv"});
-  const link=document.createElement("a");
-  link.href=URL.createObjectURL(blob);
-  link.download="attendance_report.csv";
-  link.click();
-}
-
-// ---------- LOCAL STORAGE ----------
-function saveData(key,data){localStorage.setItem(key,JSON.stringify(data));}
-function loadData(key){return JSON.parse(localStorage.getItem(key))||[];}
-attendanceLog=loadData("attendanceLog");
-trialLog=loadData("trialLog");
-
-// ---------- ABSENCE OVERVIEW ----------
-function loadAbsenceOverview(){
-  const stats={};
-  attendanceLog.forEach(r=>{
-    if(!stats[r.teacher])stats[r.teacher]={absent:0,late:0};
-    if(r.status==="teacherAbsent")stats[r.teacher].absent++;
-    if(r.status==="late")stats[r.teacher].late++;
-  });
-  const tbody=document.getElementById("absenceTable");
-  tbody.innerHTML="";
-  for(let t in stats){
-    const risk=(stats[t].absent>=3||stats[t].late>=3)?"🔴 Risky":"🟢 Reliable";
-    tbody.innerHTML+=`<tr><td>${t}</td><td>${stats[t].absent}</td><td>${stats[t].late}</td><td>${risk}</td></tr>`;
-  }
-}
-
-// ---------- NOTIFICATIONS ----------
-function notifyParent(message){if(Notification.permission==="granted"){new Notification("TalkUp English",{body:message});}}
-Notification.requestPermission();
-</script>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig={
-  apiKey:"YOUR_KEY",
-  authDomain:"YOUR_PROJECT.firebaseapp.com",
-  projectId:"YOUR_PROJECT"
-};
-
-export const app=initializeApp(firebaseConfig);
-export const auth=getAuth(app);
-export const db=getFirestore(app);
-</script>
-<script>
-// ================== GLOBAL DATA ==================
+/* ========= STATE ========= */
 let attendanceLog = loadData("attendanceLog");
 let trialLog = loadData("trialLog");
 let paymentLog = loadData("paymentLog");
 let feedbackLog = loadData("feedbackLog");
-let currentRole = "";
 
-// ================== ROLE CONTROL ==================
-function applyRole(role) {
-  currentRole = role;
-  document.querySelectorAll(".admin-only").forEach(el =>
-    el.style.display = role === "admin" ? "block" : "none"
-  );
-}
+/* ========= TEST ========= */
+console.log("loadData works:", attendanceLog);
 
-// ================== NOTIFICATIONS ==================
-function sendNotification(to, type, message) {
-  if(type === "email") {
-    console.log(`Email sent to ${to}: ${message}`);
-  } else if(type === "wechat") {
-    console.log(`WeChat message sent to ${to}: ${message}`);
-  }
-}
 
-// ================== TRIAL CLASS ==================
-function autoAssignTeacher(teachers, preferences=[]) {
-  // AI-based matching: minimize penalty + match preferences
-  return teachers
-    .map(t => {
-      const score = getTeacherScore(t);
-      const preferenceMatch = preferences.includes(t) ? 10 : 0;
-      return {name: t, totalScore: score - preferenceMatch};
-    })
-    .sort((a,b) => a.totalScore - b.totalScore)[0].name;
-}
-
-function bookTrial(parentName, studentName, preferredTeachers = []) {
-  const teachers = ["Teacher Ann","Teacher John","Teacher Lisa","Teacher Mark"];
-  const assigned = autoAssignTeacher(teachers, preferredTeachers);
-
-  const trial = {
-    parent: parentName,
-    student: studentName,
-    assignedTeacher: assigned,
-    status: "Assigned"
-  };
-  trialLog.push(trial);
-  saveData("trialLog", trialLog);
-
-  // Notify parent and teacher
-  sendNotification(parentName, "email", `Your trial class is scheduled with ${assigned}`);
-  sendNotification(assigned, "wechat", `You have a new trial class for student ${studentName}`);
-
-  return assigned;
-}
-
-// ================== ATTENDANCE ==================
-function saveAttendance(teacher, student, date, status, time, notes) {
-  const record = {teacher, student, date, status, time, notes};
-  attendanceLog.push(record);
-  saveData("attendanceLog", attendanceLog);
-
-  // Update teacher score
-  updateAttendanceScore(teacher);
-}
-
-// Teacher scoring
-function getTeacherScore(teacher) {
-  const records = attendanceLog.filter(r => r.teacher === teacher);
-  let penalty = 0;
-  records.forEach(r => {
-    if(r.status === "teacherAbsent") penalty += 20;
-    if(r.status === "late") penalty += 10;
-    if(r.status === "studentAbsent") penalty += 5;
-  });
-  return penalty;
-}
-
-function updateAttendanceScore(teacher) {
-  let score = 100 - getTeacherScore(teacher);
-  score = Math.max(0, score);
-  const el = document.getElementById("attendanceScore");
-  if(el) el.innerText = score + "%";
-}
-
-// ================== PAYMENT TRACKING ==================
-function addPayment(student, amount, date, status="Paid") {
-  paymentLog.push({student, amount, date, status});
-  saveData("paymentLog", paymentLog);
-}
-
-function getPaymentStatus(student) {
-  return paymentLog.filter(p => p.student === student);
-}
-
-// ================== TEACHER PAYROLL ==================
-function calculateTeacherPayroll(teacher, ratePerClass=20) {
-  const records = attendanceLog.filter(r => r.teacher === teacher);
-  let total = 0;
-  records.forEach(r => {
-    if(r.status === "conducted") total += ratePerClass;
-    if(r.status === "teacherAbsent") total -= 10; // deduction
-  });
-  return total;
-}
-
-// ================== FEEDBACK SENTIMENT ==================
-function addFeedback(student, teacher, text) {
-  const sentimentScore = analyzeSentiment(text);
-  feedbackLog.push({student, teacher, feedbackText:text, sentimentScore});
-  saveData("feedbackLog", feedbackLog);
-}
-
-function analyzeSentiment(text){
-  const positive=["good","great","excellent","happy","love","awesome"];
-  const negative=["bad","poor","late","disappoint","hate","terrible"];
-  let score=0;
-  text=text.toLowerCase();
-  positive.forEach(w=>{if(text.includes(w)) score+=1;});
-  negative.forEach(w=>{if(text.includes(w)) score-=1;});
-  return score;
-}
-
-function getFeedbackSummary(teacher){
-  const feedbacks = feedbackLog.filter(f=>f.teacher===teacher);
-  const summary = {positive:0, neutral:0, negative:0};
-  feedbacks.forEach(f=>{
-    if(f.sentimentScore>0) summary.positive++;
-    else if(f.sentimentScore<0) summary.negative++;
-    else summary.neutral++;
-  });
-  return summary;
-}
-
-// ================== ABSENCE OVERVIEW ==================
-function loadAbsenceOverview() {
-  const stats = {};
-  attendanceLog.forEach(r => {
-    if(!stats[r.teacher]) stats[r.teacher] = {absent:0, late:0};
-    if(r.status === "teacherAbsent") stats[r.teacher].absent++;
-    if(r.status === "late") stats[r.teacher].late++;
-  });
-
-  const tbody = document.getElementById("absenceTable");
-  tbody.innerHTML = "";
-
-  for(let t in stats){
-    const risk = stats[t].absent>=3 || stats[t].late>=3 ? "🔴 Risky" : "🟢 Reliable";
-    tbody.innerHTML += `
-      <tr>
-        <td>${t}</td>
-        <td>${stats[t].absent}</td>
-        <td>${stats[t].late}</td>
-        <td>${risk}</td>
-      </tr>
-    `;
-  }
-}
-
-// ================== STORAGE HELPERS ==================
-function saveData(key, data){ localStorage.setItem(key, JSON.stringify(data)); }
-function loadData(key){ return JSON.parse(localStorage.getItem(key)) || []; }
-
-// ================== DASHBOARD LOADER ==================
-function loadDashboard() {
-  const role = roleSelect.value;
-  const name = nameInput.value.trim();
-  if(!role || !name) return alert("Select role and enter name");
-
-  applyRole(role);
-  dashboardContent.innerHTML = `<p>Welcome ${name} (${role})</p>`;
-
-  if(role==="teacher") {
-    const score = 100 - getTeacherScore(name);
-    const payroll = calculateTeacherPayroll(name);
-    const feedback = getFeedbackSummary(name);
-    dashboardContent.innerHTML += `
-      <p>Attendance Score: ${score}%</p>
-      <p>Payroll: $${payroll}</p>
-      <p>Feedback: ${feedback.positive} Positive | ${feedback.neutral} Neutral | ${feedback.negative} Negative</p>
-    `;
-  }
-
-  if(role==="admin") {
-    loadAbsenceOverview();
-  }
-}
-
-// ================== EXPORT ATTENDANCE ==================
-function exportAttendanceCSV() {
-  let csv="Teacher,Student,Date,Status,Time,Notes\n";
-  attendanceLog.forEach(r => {
-    csv+=`${r.teacher},${r.student},${r.date},${r.status},${r.time},${r.notes}\n`;
-  });
-  const blob = new Blob([csv],{type:"text/csv"});
-  const link=document.createElement("a");
-  link.href=URL.createObjectURL(blob);
-  link.download="attendance_report.csv";
-  link.click();
-}
-<!-- ================== NOTIFICATIONS PANEL ================== -->
-<div id="notificationsPanel" class="position-fixed top-0 end-0 m-3" style="z-index:1050; width:300px;"></div>
-
-<script>
-// ================== NOTIFICATION SYSTEM ==================
-const notifications = [];
-
-// Add a notification
-function addNotification(message, type = "info") {
-  const notif = { message, type, time: new Date() };
-  notifications.push(notif);
-  renderNotification(notif);
-}
-
-// Render notification in dashboard
-function renderNotification(notif) {
-  const panel = document.getElementById("notificationsPanel");
-
-  const div = document.createElement("div");
-  div.className = `alert alert-${notif.type} alert-dismissible fade show`;
-  div.role = "alert";
-  div.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
-  div.innerHTML = `
-    ${notif.message}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    <small class="text-muted d-block">${notif.time.toLocaleTimeString()}</small>
-  `;
-  
-  panel.appendChild(div);
-
-  // Auto dismiss after 5 seconds
-  setTimeout(() => div.remove(), 5000);
-}
-
-// ================== EVENT TRIGGERS ==================
-// Trial booking event
-function notifyTrialBooking(parent, student, teacher) {
-  addNotification(`Trial booked: ${student} assigned to ${teacher} (Parent: ${parent})`, "success");
-}
-
-// Attendance event
-function notifyAttendanceRecorded(teacher, student, status) {
-  addNotification(`Attendance recorded: ${student} (${status}) - Teacher: ${teacher}`, "info");
-}
-
-// Payment event
-function notifyPaymentReceived(student, amount, status) {
-  addNotification(`Payment ${status}: ${student} paid $${amount}`, "warning");
-}
-
-// ================== INTEGRATION WITH EXISTING MODULE ==================
-// Trigger notifications when trial is booked
-document.getElementById("trialForm").addEventListener("submit", e => {
-  e.preventDefault();
-
-  const parent = parentName.value;
-  const student = studentName.value;
-  const assigned = autoAssignTeacher(["Teacher Ann", "Teacher John", "Teacher Lisa", "Teacher Mark"]);
-  const trial = { parent, student, assignedTeacher: assigned, status: "Assigned" };
-  
-  trialLog.push(trial);
-  saveData("trialLog", trialLog);
-
-  trialMessage.innerHTML = `Trial booked ✔ Assigned to <b>${assigned}</b>`;
-  notifyTrialBooking(parent, student, assigned);
-  e.target.reset();
-});
-
-// Trigger notifications when attendance is saved
-document.getElementById("attendanceForm").addEventListener("submit", e => {
-  e.preventDefault();
-
-  const record = {
-    teacher: attTeacher.value,
-    student: attStudent.value,
-    date: attDate.value,
-    status: attStatus.value,
-    time: attTime.value,
-    notes: attNotes.value
-  };
-
-  attendanceLog.push(record);
-  saveData("attendanceLog", attendanceLog);
-
-  updateAttendanceScore(record.teacher);
-  attendanceMsg.innerText = "Attendance saved ✔";
-  notifyAttendanceRecorded(record.teacher, record.student, record.status);
-  e.target.reset();
-});
-
-// Trigger notifications when payment is made
-function addPayment(student, amount, status="Completed") {
-  const payment = { student, amount, status, date: new Date().toLocaleDateString() };
-  paymentLog.push(payment);
-  saveData("paymentLog", paymentLog);
-  notifyPaymentReceived(student, amount, status);
-}
-
-// ================== OPTIONAL: WEB NOTIFICATIONS ==================
-if("Notification" in window) {
-  Notification.requestPermission();
-  function pushBrowserNotification(title, message) {
-    if(Notification.permission === "granted") {
-      new Notification(title, { body: message });
-    }
-  }
-}
-
-// Example usage: pushBrowserNotification("Trial Booked", "Student X assigned to Teacher Lisa");
+/* ========= STOP HERE TEMPORARILY ========= */
 </script>
+<script>
+document.getElementById("trialForm").addEventListener("submit", function(e) {
+  e.preventDefault();
 
+  const formData = new FormData();
+  formData.append("parentName", parentName.value);
+  formData.append("studentName", studentName.value);
+  formData.append("email", email.value);
+  formData.append("phone", phone.value);
+  formData.append("preferredTeacher", preferredTeacher.value);
 
+  fetch("https://script.google.com/macros/s/AKfycby4y9Z6NbzynxBqNmzh950OWmB6Gg128MJoez3p7RTTezIWZT2J_6dALv-LyOchKz-k/exec", {
+    method: "POST",
+    body: formData,
+    mode: "no-cors"
+  });
+
+  trialMessage.innerHTML =
+    "<div class='alert alert-success'>Trial booked successfully!</div>";
+
+  this.reset();
+});
 </script>
 
 </body>
 </html>
-
