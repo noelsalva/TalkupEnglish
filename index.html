@@ -134,7 +134,27 @@ body { padding-top: 70px; font-family: Arial, sans-serif; }
     width: 100% !important;
   }
 }
+/* ===== BACKGROUND IMAGE BEHIND CONTENT (NO LAYOUT CHANGE) ===== */
+.home-bg {
+  position: relative;
+  overflow: hidden;
+}
 
+/* Background image layer */
+.home-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("talkup.jpeg") center center / cover no-repeat;
+  opacity: 0.25;               /* adjust if needed */
+  z-index: 0;
+}
+
+/* Keep all content ABOVE the background image */
+.home-bg > * {
+  position: relative;
+  z-index: 1;
+}
 </style>
 </head>
 <!-- ================== NOTIFICATION CENTER ================== -->
@@ -449,3 +469,4 @@ document.getElementById("trialForm").addEventListener("submit", function(e) {
 
 </body>
 </html>
+
