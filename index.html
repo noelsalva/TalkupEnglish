@@ -155,6 +155,7 @@ body { padding-top: 70px; font-family: Arial, sans-serif; }
   position: relative;
   z-index: 1;
 }
+
 </style>
 </head>
 <!-- ================== NOTIFICATION CENTER ================== -->
@@ -227,7 +228,7 @@ body { padding-top: 70px; font-family: Arial, sans-serif; }
       <img src="logo.png" class="logo mb-3">
       <h2>TalkUp English: Speak Up, Stand Out!</h2>
       <p class="mb-3">Book a Fun English Class</p>
-      <a href="booking.html" class="btn btn-book mb-4">Book Now</a>
+      <a href="https://script.google.com/macros/s/AKfycbx5FC3cpkZCBB2tVChhEwu7MAZgrlFpWpmvM0cflfMzi-PZLTkK69PffWSNGIKCppMBSQ/exec" class="btn btn-book mb-4">Register Now</a>
       <div><p>For further inquiries, connect via WeChat</p><img src="wechat.png" width="150" class="rounded border border-light"></div>
     </div>
     <div class="col-md-3 p-4" style="background:rgba(0,0,0,0.25)">
@@ -466,7 +467,17 @@ document.getElementById("trialForm").addEventListener("submit", function(e) {
   this.reset();
 });
 </script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const message = params.get("message");
+
+  if (message) {
+    alert(message);
+
+    // Optional: remove message from URL after showing
+    window.history.replaceState({}, document.title, "index.html");
+  }
+</script>
 
 </body>
 </html>
-
